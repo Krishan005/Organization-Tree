@@ -24,11 +24,15 @@ const EMPLOYEE_SCHEMA = new mongoose.Schema({
         type: String
     },
     experience_years: {
-        type: Number
+        type: Number,
+        default: 0
     },
     reporting: {
         type: mongoose.Schema.Types.ObjectId,
-    }
+    },
+    picture: {
+        type: String,
+    },
 }, { timestamps: true });
 
 const employeeModel = mongoose.model<EmployeeDocument>("employee", EMPLOYEE_SCHEMA);
