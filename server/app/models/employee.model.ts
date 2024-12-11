@@ -32,6 +32,7 @@ const EMPLOYEE_SCHEMA = new mongoose.Schema({
     },
     picture: {
         type: String,
+        default: "",
     },
 }, { timestamps: true });
 

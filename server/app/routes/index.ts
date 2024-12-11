@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 
 // Utils
 import multer from "multer";
-// import { uploadImage } from "../utils/fileUpload.utils";
+import { uploadImage } from "../utils/fileUpload.util";
 
 // Routes for modules
 import adminRoutes from "./admin.route";
@@ -32,20 +32,20 @@ router.post(
           },
         });
       }
-    //   if (req.file.mimetype != "image/jpg") {
-    //     return res.status(422).send({
-    //       status: false,
-    //       error: {
-    //         msg: "FILE_IS_NOT_IMAGE_TYPE",
-    //         param: "file",
-    //         location: "image",
-    //       },
-    //     });
-    //   }
+      //   if (req.file.mimetype != "image/jpg") {
+      //     return res.status(422).send({
+      //       status: false,
+      //       error: {
+      //         msg: "FILE_IS_NOT_IMAGE_TYPE",
+      //         param: "file",
+      //         location: "image",
+      //       },
+      //     });
+      //   }
 
-      // const fileUrl = await uploadImage(req, res);
+      const fileUrl = await uploadImage(req, res);
 
-      return res.status(201).json({ status: true, }); // imageUrl: fileUrl
+      return res.status(201).json({ status: true, imageUrl: fileUrl });
     } catch (error: any) {
       return res.status(500).json({
         status: false,
