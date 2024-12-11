@@ -29,10 +29,12 @@ const EMPLOYEE_SCHEMA = new mongoose.Schema({
     },
     reporting: {
         type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref: "employee"
     },
     picture: {
         type: String,
-        default: "",
+        default: "server/storages/uploads/images/download.jpg",
     },
 }, { timestamps: true });
 

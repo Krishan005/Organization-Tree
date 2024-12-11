@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@reduxjs/toolkit": "^2.5.0",
+    "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "cra-template-pwa": "2.0.0",
     "primereact": "^10.8.5",
@@ -10,7 +12,9 @@
     "react": "^19.0.0",
     "react-d3-tree": "^3.6.2",
     "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
     "react-scripts": "5.0.1",
+    "redux": "^5.0.1",
     "web-vitals": "^4.2.4"
   },
   "scripts": {

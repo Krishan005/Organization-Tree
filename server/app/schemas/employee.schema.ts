@@ -6,7 +6,7 @@ export const createEmployeeSchema = object({
     body: object({
         fullName: string().min(3).required("Full name is required"),
         designation: string().min(3).required("Designation is required"),
-        date_of_birth: string().matches(regX),
+        // date_of_birth: string().matches(regX),
         experience_years: number().min(0).positive()
     }),
 });

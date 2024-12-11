@@ -6,7 +6,8 @@ import {
   saveEmployeeDoc,
   findAllEmployeeDocs,
   findEmployeeById,
-  buildHierarchy
+  buildHierarchy,
+  findAllEmployeeTreeDocs
 } from "../services/employee.service";
 
 export async function createEmployee(req: Request, res: Response) {
@@ -98,14 +99,13 @@ export async function getEmployeeById(req: Request, res: Response) {
 
 export async function getEmployeeTree(req: Request, res: Response) {
   try {
-    let employees = await findAllEmployeeDocs();
+    let employees = await findAllEmployeeTreeDocs();
     
-    let tree = buildHierarchy(JSON.parse(JSON.stringify(employees)));
-
+  
     return res.status(200).json({
       status: true,
       message: "Organization tree get successfully.",
-      data: tree[0],
+      data: employees,
     });
   } catch (error: any) {
     return res.status(500).json({

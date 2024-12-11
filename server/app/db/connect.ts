@@ -8,8 +8,8 @@ function dbConnect() {
   mongoose.set("strictQuery", false);
   mongoose
     .connect(dbUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true,
     } as ConnectOptions)
     .then(() => {
       log.info("Database connected");
