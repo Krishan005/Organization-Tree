@@ -33,14 +33,14 @@ const uploadImage = async (req: Request, res: Response) => {
     }
 
     var serverDirectory = "/1/server"
+    var upload_endpoint = "/storages/uploads/images/"
 
     var file_name =
-      "/storages/uploads/images/" +
       Math.floor(100000 + Math.random() * 900000) +
       "." +
       filetype;
 
-    fs.writeFileSync("../.."+serverDirectory+file_name, req.file.buffer);
+    fs.writeFileSync("../.."+serverDirectory+upload_endpoint+file_name, req.file.buffer);
 
     return file_name;
   } else {
