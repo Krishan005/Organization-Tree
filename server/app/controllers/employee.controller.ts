@@ -6,6 +6,7 @@ import {
   saveEmployeeDoc,
   findAllEmployeeDocs,
   findEmployeeById,
+  buildHierarchy
 } from "../services/employee.service";
 
 export async function createEmployee(req: Request, res: Response) {
@@ -113,31 +114,4 @@ export async function getEmployeeTree(req: Request, res: Response) {
       error: error.message,
     });
   }
-}
-
-type Employee = {
-  _id: string;
-  fullName: string;
-  designation: string;
-  date_of_birth: string;
-  experience_years: number;
-  picture: string;
-  reporting?: string;
-  expanded?: boolean;
-  type?: string;
-  children?: Employee[];
-};
-
-function buildHierarchy(
-  employees: Employee[],
-  parentId: string | undefined = undefined
-): Employee[] {
-  return employees
-    .filter((employee) => employee.reporting == parentId)
-    .map((employee) => ({
-      ...employee,
-      expanded: true,
-      type: "person",
-      children: buildHierarchy(employees, employee._id), // Recursively build children
-    }));
 }

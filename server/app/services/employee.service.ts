@@ -146,3 +146,30 @@ export async function collateEmployeeTree() {
     throw new Error(error);
   }
 }
+
+type Employee = {
+    _id: string;
+    fullName: string;
+    designation: string;
+    date_of_birth: string;
+    experience_years: number;
+    picture: string;
+    reporting?: string;
+    expanded?: boolean;
+    type?: string;
+    children?: Employee[];
+  };
+  
+  export function buildHierarchy(
+    employees: Employee[],
+    parentId: string | undefined = undefined
+  ): Employee[] {
+    return employees
+      .filter((employee) => employee.reporting == parentId)
+      .map((employee) => ({
+        ...employee,
+        expanded: true,
+        type: "person",
+        children: buildHierarchy(employees, employee._id), // Recursively build children
+      }));
+  }
