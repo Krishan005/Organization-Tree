@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import mongoose, { ObjectId } from "mongoose";
-import { EmployeeDocument } from "../models/employee.model";
+import mongoose from "mongoose";
 
 // Services
 import {
