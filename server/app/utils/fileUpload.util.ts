@@ -42,7 +42,7 @@ const uploadImage = async (req: Request, res: Response) => {
 
     fs.writeFileSync("../.."+serverDirectory+upload_endpoint+file_name, req.file.buffer);
 
-    return file_name;
+    return upload_endpoint+file_name;
   } else {
     return res.status(400).json({
       status: false,

@@ -4,9 +4,9 @@ const regX = new RegExp(/^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\
 
 export const createEmployeeSchema = object({
     body: object({
-        fullName: string().required("Full name is required"),
-        designation: string().required("Designation is required"),
+        fullName: string().min(3).required("Full name is required"),
+        designation: string().min(3).required("Designation is required"),
         date_of_birth: string().matches(regX),
         experience_years: number().min(0).positive()
     }),
-})
+});
