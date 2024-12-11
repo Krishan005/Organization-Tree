@@ -106,7 +106,7 @@ export async function getEmployeeTree(req: Request, res: Response) {
     return res.status(200).json({
       status: true,
       message: "Organization tree get successfully.",
-      data: tree,
+      data: tree[0],
     });
   } catch (error: any) {
     return res.status(500).json({
