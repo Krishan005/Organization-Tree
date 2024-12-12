@@ -7,7 +7,7 @@ import './List.css'; // Import custom styles
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData } from '../Redux/dataSlices';
 import { fetchDataEmployee } from '../Redux/getAllEmployeeSlice';
-import { createEmployee } from '../Redux/createEmployeeSlices';
+import { createEmployee, editEmployee } from '../Redux/EmployeeAddAndEditSlices';
 import { uploadImage } from '../Redux/UplaodImageSlices';
 
 export default function List() {
@@ -28,6 +28,7 @@ export default function List() {
 
     const [showDialog, setShowDialog] = useState(false);
     const [newEmployee, setNewEmployee] = useState({
+        _id: "",
         fullName: '',
         designation: '',
         date_of_birth: '',
@@ -43,7 +44,7 @@ export default function List() {
     const dispatch = useDispatch();
     const { items, status, error } = useSelector((state) => state.data);
     const { employees, employeesstatus } = useSelector((state) => state.allemployees);
-    const { AddedEmployee, newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.newEmployees);
+    const { AddedEmployee, newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.addAndEditEmployees);
     const { image, imageStatus, imageError } = useSelector((state) => state.uploadImage);
 
     useEffect(() => {
@@ -75,14 +76,19 @@ export default function List() {
         }
 
         setTimeout(async () => {
-            // Create Employee
-            await dispatch(createEmployee(newEmployee)).unwrap();
+            if (actionType === "add") {
+                // Create Employee
+                await dispatch(createEmployee(newEmployee)).unwrap();
+            } else {
+                // Update Employee
+                await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
+            }
 
             // Fetch Updated Data
             await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
 
             // Reset Form and Close Dialog
-
+            setactionType("add");
             setNewEmployee({
                 fullName: '',
                 designation: '',
@@ -92,6 +98,7 @@ export default function List() {
                 reporting: '',
                 file: null
             });
+            setuploadedImg("");
             setErrors({});
         }, 1000);
     }, [imageStatus === 'succeeded'])
@@ -106,7 +113,7 @@ export default function List() {
         if (!newEmployee.date_of_birth.trim()) validationErrors.date_of_birth = 'Date of Birth is required';
         if (!newEmployee.experience_years || isNaN(newEmployee.experience_years)) validationErrors.experience_years = 'Valid experience years are required';
         if (!newEmployee.reporting.trim()) validationErrors.reporting = 'Reporting ID is required';
-        if (!newEmployee.file) {
+        if (actionType==="add" && !newEmployee.file) {
             validationErrors.file = 'File is required';
         }
         return validationErrors;
@@ -125,9 +132,53 @@ export default function List() {
             if (newEmployee.file) {
                 const formData = new FormData();
                 formData.append('image', newEmployee.file);
-                await dispatch(uploadImage(formData)).unwrap(); // Wait for the image to upload
+                await dispatch(uploadImage(formData)).unwrap();
+            }
 
 
+        } catch (err) {
+            console.error("Error adding employee:", err);
+        }
+    };
+
+    const handleEditEmployee = async () => {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
+        try {
+            // Upload Image if there is a file
+            if (newEmployee.file) {
+                console.log("with file");
+                
+                const formData = new FormData();
+                formData.append('image', newEmployee.file);
+                await dispatch(uploadImage(formData)).unwrap();
+            } else {
+                console.log("without file");
+                
+                // Update Employee
+                await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
+
+                // Fetch Updated Data
+                await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
+
+                // Reset Form and Close Dialog
+                setShowDialog(false);
+                setactionType("add");
+                setNewEmployee({
+                    fullName: '',
+                    designation: '',
+                    date_of_birth: '',
+                    experience_years: 0,
+                    picture: '',
+                    reporting: '',
+                    file: null
+                });
+                setuploadedImg("");
+                setErrors({});
             }
 
 
@@ -185,7 +236,25 @@ export default function List() {
                 nodeTemplate={nodeTemplate}
             />
 
-            <Dialog header={actionType === "add" ? "Add New Employee" : "Edit Employee"} visible={showDialog} onHide={() => setShowDialog(false)}>
+            <Dialog
+                header={actionType === "add" ? "Add New Employee" : "Edit Employee"}
+                visible={showDialog}
+                onHide={() => {
+                    setShowDialog(false);
+                    setactionType("add");
+                    setNewEmployee({
+                        fullName: '',
+                        designation: '',
+                        date_of_birth: '',
+                        experience_years: 0,
+                        picture: '',
+                        reporting: '',
+                        file: null
+                    });
+                    setErrors({});
+                    setuploadedImg("");
+                }}
+            >
                 <div className="p-field">
                     <label htmlFor="fullName">Full Name</label>
                     <InputText
@@ -260,6 +329,8 @@ export default function List() {
                     onClick={(e) => {
                         if (actionType === "add") {
                             handleAddEmployee(e)
+                        } else {
+                            handleEditEmployee(e)
                         }
                     }}
                 />

@@ -174,3 +174,18 @@ export function buildHierarchy(
       children: buildHierarchy(employees, employee._id), // Recursively build children
     }));
 }
+
+export async function updateEmployeeById(
+  id: EmployeeDocument["_id"],
+  doc: EmployeeDocument
+) {
+  try {
+    return await employeeModel.findByIdAndUpdate(
+      id,
+      { $set: doc },
+      { new: true }
+    );
+  } catch (error: any) {
+    throw new Error(error);
+  }
+}

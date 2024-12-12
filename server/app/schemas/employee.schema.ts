@@ -10,3 +10,14 @@ export const createEmployeeSchema = object({
         experience_years: number().min(0).positive()
     }),
 });
+
+export const editEmployeeSchema = object({
+    params: object({
+        id: string().required()
+    }),
+    body: object({
+        fullName: string().min(3),
+        designation: string().min(3),
+        experience_years: number().min(0).positive()
+    }),
+})
