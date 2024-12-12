@@ -36,16 +36,15 @@ export default function List() {
         reporting: '59b99db4cfa9a34dcd7885b6',
         file: null
     });
-
+    const [uploadedImg, setuploadedImg] = useState("")
     const [errors, setErrors] = useState({});
+    const [actionType, setactionType] = useState("add");
 
     const dispatch = useDispatch();
     const { items, status, error } = useSelector((state) => state.data);
     const { employees, employeesstatus } = useSelector((state) => state.allemployees);
-    const  { AddedEmployee , newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.newEmployees);
+    const { AddedEmployee, newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.newEmployees);
     const { image, imageStatus, imageError } = useSelector((state) => state.uploadImage);
-
-    console.log(AddedEmployee);
 
     useEffect(() => {
         if (status === 'idle') {
@@ -53,48 +52,48 @@ export default function List() {
             dispatch(fetchDataEmployee());
         }
         if (status === 'succeeded') {
-            if(items.data.length > 0){
+            if (items.data.length > 0) {
                 setData(items?.data);
             }
         }
         if (employeesstatus === 'succeeded') {
-            if(employees.data.length > 0){
+            if (employees.data.length > 0) {
                 setAllEmployees(employees?.data);
             }
-            
+
         }
     }, [status, employeesstatus, dispatch, newEmployeeStatus]);
 
-    
+
     useEffect(() => {
         if (imageStatus === 'succeeded' && image?.imageUrl?.filePath) {
             newEmployee.picture = image.imageUrl.filePath;
-              setShowDialog(false);
-            } else {
-                setErrors({ file: 'File is importent.' });
-                return;
+            setShowDialog(false);
+        } else {
+            setErrors({ file: 'File is importent.' });
+            return;
         }
-        
-          setTimeout(async () => {
-         // Create Employee
-        await dispatch(createEmployee(newEmployee)).unwrap();
 
-        // Fetch Updated Data
-        await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
+        setTimeout(async () => {
+            // Create Employee
+            await dispatch(createEmployee(newEmployee)).unwrap();
 
-        // Reset Form and Close Dialog
-      
-        setNewEmployee({
-            fullName: '',
-            designation: '',
-            date_of_birth: '',
-            experience_years: 0,
-            picture: '',
-            reporting: '',
-            file: null
-        });
-        setErrors({}); 
-      }, 1000);
+            // Fetch Updated Data
+            await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
+
+            // Reset Form and Close Dialog
+
+            setNewEmployee({
+                fullName: '',
+                designation: '',
+                date_of_birth: '',
+                experience_years: 0,
+                picture: '',
+                reporting: '',
+                file: null
+            });
+            setErrors({});
+        }, 1000);
     }, [imageStatus === 'succeeded'])
 
     if (status === 'loading') return <p>Loading...</p>;
@@ -109,45 +108,53 @@ export default function List() {
         if (!newEmployee.reporting.trim()) validationErrors.reporting = 'Reporting ID is required';
         if (!newEmployee.file) {
             validationErrors.file = 'File is required';
-        } 
+        }
         return validationErrors;
     };
 
 
-const handleAddEmployee = async () => {
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-    }
-
-    try {
-        // Upload Image if there is a file
-        if (newEmployee.file) {
-            const formData = new FormData();
-            formData.append('image', newEmployee.file);
-            await dispatch(uploadImage(formData)).unwrap(); // Wait for the image to upload
-
-        
+    const handleAddEmployee = async () => {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
         }
 
-    
-    } catch (err) {
-        console.error("Error adding employee:", err);
-    }
-};
+        try {
+            // Upload Image if there is a file
+            if (newEmployee.file) {
+                const formData = new FormData();
+                formData.append('image', newEmployee.file);
+                await dispatch(uploadImage(formData)).unwrap(); // Wait for the image to upload
+
+
+            }
+
+
+        } catch (err) {
+            console.error("Error adding employee:", err);
+        }
+    };
 
 
 
     const nodeTemplate = (node) => {
         if (node.type === 'person') {
             return (
-                <div className="node-card">
-                    <img alt={node.data.name} src={node.data.image? `${process.env.REACT_APP_BASE_URL}`+node.data.image :" https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png"} className="node-image" />
+                <div className="node-card" onClick={() => {
+                    setNewEmployee(prev => {
+                        let update = JSON.parse(JSON.stringify(prev));
+                        return { ...update, ...node }
+                    });
+                    setuploadedImg(`${process.env.REACT_APP_BASE_URL}` + node.picture)
+                    setShowDialog(true);
+                    setactionType("edit");
+                }}>
+                    <img alt={node.fullName} src={node.picture ? `${process.env.REACT_APP_BASE_URL}` + node.picture : " https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png"} className="node-image" />
                     <div className="node-details">
-                        <span className="node-name">{node.data.name}</span>
+                        <span className="node-name">{node.fullName}</span>
                         <br />
-                        <span className="node-title">{node.data.title}</span>
+                        <span className="node-title">{node.designation}</span>
                     </div>
                 </div>
             );
@@ -163,11 +170,11 @@ const handleAddEmployee = async () => {
 
     return (
         <div className="card overflow-x-auto organization-chart">
-            <Button 
-                label="Add Employee" 
-                icon="pi pi-plus" 
+            <Button
+                label="Add Employee"
+                icon="pi pi-plus"
                 className="add-employee-button"
-                onClick={() => setShowDialog(true)} 
+                onClick={() => setShowDialog(true)}
             />
 
             <OrganizationChart
@@ -178,7 +185,7 @@ const handleAddEmployee = async () => {
                 nodeTemplate={nodeTemplate}
             />
 
-            <Dialog header="Add New Employee" visible={showDialog} onHide={() => setShowDialog(false)}>
+            <Dialog header={actionType === "add" ? "Add New Employee" : "Edit Employee"} visible={showDialog} onHide={() => setShowDialog(false)}>
                 <div className="p-field">
                     <label htmlFor="fullName">Full Name</label>
                     <InputText
@@ -225,11 +232,17 @@ const handleAddEmployee = async () => {
                         id="file"
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setNewEmployee({ ...newEmployee, file: e.target.files[0] })}
+                        onChange={(e) => {
+                            setuploadedImg(URL.createObjectURL(e.target.files[0]))
+                            setNewEmployee({ ...newEmployee, file: e.target.files[0] })
+                        }}
                     />
                     {errors.file && <small className="p-error">{errors.file}</small>}
                 </div>
-                <div className="p-field">
+                {uploadedImg !== "" && <div>
+                    <img src={uploadedImg} height="100" width="100" />
+                </div>}
+                {actionType === "edit" && (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") ? "" : <div className="p-field">
                     <label htmlFor="reporting">Reporting</label>
                     <br />
                     <Dropdown
@@ -240,8 +253,16 @@ const handleAddEmployee = async () => {
                         placeholder="Select Reporting Employee"
                     />
                     {errors.reporting && <small className="p-error">{errors.reporting}</small>}
-                </div>
-                <Button label="Add" icon="pi pi-check" onClick={handleAddEmployee} />
+                </div>}
+                <Button
+                    label={actionType === "add" ? "Add" : "Edit"}
+                    icon="pi pi-check"
+                    onClick={(e) => {
+                        if (actionType === "add") {
+                            handleAddEmployee(e)
+                        }
+                    }}
+                />
             </Dialog>
         </div>
     );
