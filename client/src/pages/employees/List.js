@@ -5,10 +5,10 @@ import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "primereact/resources/primereact.min.css";
 import './List.css'; // Import custom styles
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchData } from '../Redux/dataSlices';
-import { fetchDataEmployee } from '../Redux/getAllEmployeeSlice';
-import { createEmployee, editEmployee } from '../Redux/EmployeeAddAndEditSlices';
-import { uploadImage } from '../Redux/UplaodImageSlices';
+import { fetchData } from '../../Redux/dataSlices';
+import { fetchDataEmployee } from '../../Redux/getAllEmployeeSlice';
+import { createEmployee, editEmployee } from '../../Redux/EmployeeAddAndEditSlices';
+import { uploadImage } from '../../Redux/UplaodImageSlices';
 
 export default function List() {
     const [selection, setSelection] = useState([]);
@@ -28,7 +28,6 @@ export default function List() {
 
     const [showDialog, setShowDialog] = useState(false);
     const [newEmployee, setNewEmployee] = useState({
-        _id: "",
         fullName: '',
         designation: '',
         date_of_birth: '',
@@ -84,7 +83,7 @@ export default function List() {
                     delete newEmployee.reporting
                 }
                 // Update Employee
-                await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
+                await dispatch(editEmployee({ id: newEmployee?._id, data: newEmployee })).unwrap();
             }
 
             // Fetch Updated Data
@@ -166,7 +165,7 @@ export default function List() {
                     delete newEmployee.reporting
                 }
                 // Update Employee
-                await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
+                await dispatch(editEmployee({ id: newEmployee?._id, data: newEmployee })).unwrap();
 
                 // Fetch Updated Data
                 await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);

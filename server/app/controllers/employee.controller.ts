@@ -39,11 +39,12 @@ export async function createEmployee(req: Request, res: Response) {
       message: "Employee added sucessfully",
       data: employee,
     });
-  } catch (error) {
+  } catch (error:any) {
+    console.log(error)
     return res.status(500).json({
       status: false,
       message: "Server error. Please try again.",
-      error,
+      error: error.message,
     });
   }
 }
