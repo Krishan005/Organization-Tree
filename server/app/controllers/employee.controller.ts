@@ -100,8 +100,6 @@ export async function getEmployeeById(req: Request, res: Response) {
 export async function getEmployeeTree(req: Request, res: Response) {
   try {
     let employees = await findAllEmployeeDocs();
-    console.log(JSON.parse(JSON.stringify(employees)));
-
     let tree = buildHierarchy(JSON.parse(JSON.stringify(employees)));
 
     return res.status(200).json({
@@ -128,8 +126,6 @@ export async function editEmployee(req: Request, res: Response) {
         message: "Invalid id in params",
       });
     }
-
-    console.log(req.body);
 
     let updated = await updateEmployeeById(id, req.body);
 

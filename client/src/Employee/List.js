@@ -80,6 +80,9 @@ export default function List() {
                 // Create Employee
                 await dispatch(createEmployee(newEmployee)).unwrap();
             } else {
+                if (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") {
+                    delete newEmployee.reporting
+                }
                 // Update Employee
                 await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
             }
@@ -112,8 +115,12 @@ export default function List() {
         if (!newEmployee.designation.trim()) validationErrors.designation = 'Designation is required';
         if (!newEmployee.date_of_birth.trim()) validationErrors.date_of_birth = 'Date of Birth is required';
         if (!newEmployee.experience_years || isNaN(newEmployee.experience_years)) validationErrors.experience_years = 'Valid experience years are required';
-        if (!newEmployee.reporting.trim()) validationErrors.reporting = 'Reporting ID is required';
-        if (actionType==="add" && !newEmployee.file) {
+        if ((!newEmployee.designation.trim().toUpperCase() === "CEO" ||
+            !newEmployee.designation.trim().toLocaleLowerCase() === "chief executive officer") &&
+            !newEmployee.reporting.trim()) {
+            validationErrors.reporting = 'Reporting ID is required'
+        };
+        if (actionType === "add" && !newEmployee.file) {
             validationErrors.file = 'File is required';
         }
         return validationErrors;
@@ -151,14 +158,13 @@ export default function List() {
         try {
             // Upload Image if there is a file
             if (newEmployee.file) {
-                console.log("with file");
-                
                 const formData = new FormData();
                 formData.append('image', newEmployee.file);
                 await dispatch(uploadImage(formData)).unwrap();
             } else {
-                console.log("without file");
-                
+                if (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") {
+                    delete newEmployee.reporting
+                }
                 // Update Employee
                 await dispatch(editEmployee({ id: newEmployee._id, data: newEmployee })).unwrap();
 
@@ -311,7 +317,7 @@ export default function List() {
                 {uploadedImg !== "" && <div>
                     <img src={uploadedImg} height="100" width="100" />
                 </div>}
-                {actionType === "edit" && (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") ? "" : <div className="p-field">
+                {actionType === "edit" && (newEmployee?.designation?.toUpperCase() === "CEO" || newEmployee?.designation?.toLowerCase() === "chief executive officer") ? "" : <div className="p-field">
                     <label htmlFor="reporting">Reporting</label>
                     <br />
                     <Dropdown

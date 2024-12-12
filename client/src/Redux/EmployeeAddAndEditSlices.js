@@ -16,7 +16,7 @@ export const createEmployee = createAsyncThunk(
 
 export const editEmployee = createAsyncThunk("data/edit_employee", async ({ id, data }, {rejectWithValue}) => {
   try {
-    const response = await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/admin/employee/${id}`, data);
+    const response = await axios.put(`${process.env.REACT_APP_API_BASE_URL}/admin/employee/${id}`, data);
     return response.data;
   } catch (error) {
     return rejectWithValue(error.message);

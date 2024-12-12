@@ -24,7 +24,7 @@ router.post("/employee", validateRequest(createEmployeeSchema), createEmployee);
 router.get("/employee", getAllEmployees);
 router.get("/employee/:id", getEmployeeById);
 router.get("/organization-tree", getEmployeeTree);
-router.patch(
+router.put(
   "/employee/:id",
   validateRequest(editEmployeeSchema),
   editEmployee
