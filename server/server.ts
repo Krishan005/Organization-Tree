@@ -18,7 +18,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/storages", express.static(path.join(__dirname, "storages")));
-app.use("/server", express.static(path.join(__dirname, "server")));
 
 
 app.use("/", indexRoute);

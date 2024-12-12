@@ -196,7 +196,7 @@ export async function findAllEmployeeTreeDocs() {
       },
       {
         $project: {
-          _id: 0, // Exclude _id if needed
+          _id: 0,
           expanded: 1,
           type: 1,
           data: 1,
@@ -210,9 +210,6 @@ export async function findAllEmployeeTreeDocs() {
     throw new Error(error);
   }
 }
-
-
-
 
 
 export async function findEmployeeById(id: EmployeeDocument["_id"]) {

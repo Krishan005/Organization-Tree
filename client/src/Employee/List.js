@@ -143,7 +143,7 @@ const handleAddEmployee = async () => {
         if (node.type === 'person') {
             return (
                 <div className="node-card">
-                    <img alt={node.data.name} src={node.data.image? `${process.env.REACT_APP_API_FILEUPLOAD_URL}/`+node.data.image :" https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png"} className="node-image" />
+                    <img alt={node.data.name} src={node.data.image? `${process.env.REACT_APP_BASE_URL}`+node.data.image :" https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png"} className="node-image" />
                     <div className="node-details">
                         <span className="node-name">{node.data.name}</span>
                         <br />
