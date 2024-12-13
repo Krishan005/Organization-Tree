@@ -7,8 +7,17 @@ import './List.css'; // Import custom styles
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData } from '../../Redux/dataSlices';
 import { fetchDataEmployee } from '../../Redux/getAllEmployeeSlice';
+import { scrollToErrorElement } from "../../utils";
+import { fileUpload } from "../../helpers/XmlClientHttp";
 import { createEmployee, editEmployee } from '../../Redux/EmployeeAddAndEditSlices';
 import { uploadImage } from '../../Redux/UplaodImageSlices';
+
+const createErrors = {
+    fullName: '',
+    designation: '',
+    reporting: '',
+    file: ''
+}
 
 export default function List() {
     const [selection, setSelection] = useState([]);
@@ -33,11 +42,12 @@ export default function List() {
         date_of_birth: '',
         experience_years: 0,
         picture: '',
-        reporting: '59b99db4cfa9a34dcd7885b6',
+        reporting: '', // 59b99db4cfa9a34dcd7885b6
         file: null
     });
     const [uploadedImg, setuploadedImg] = useState("")
     const [errors, setErrors] = useState({});
+    const [errorsInData, seterrorsInData] = useState(createErrors);
     const [actionType, setactionType] = useState("add");
 
     const dispatch = useDispatch();
@@ -45,6 +55,7 @@ export default function List() {
     const { employees, employeesstatus } = useSelector((state) => state.allemployees);
     const { AddedEmployee, newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.addAndEditEmployees);
     const { image, imageStatus, imageError } = useSelector((state) => state.uploadImage);
+    console.log("newEmployee", newEmployee)
 
     useEffect(() => {
         if (status === 'idle') {
@@ -70,7 +81,7 @@ export default function List() {
             newEmployee.picture = image.imageUrl.filePath;
             setShowDialog(false);
         } else {
-            setErrors({ file: 'File is importent.' });
+            // setErrors({ file: 'File is importent.' });
             return;
         }
 
@@ -78,13 +89,14 @@ export default function List() {
             if (actionType === "add") {
                 // Create Employee
                 await dispatch(createEmployee(newEmployee)).unwrap();
-            } else {
-                if (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") {
-                    delete newEmployee.reporting
-                }
-                // Update Employee
-                await dispatch(editEmployee({ id: newEmployee?._id, data: newEmployee })).unwrap();
             }
+            // else {
+            //     if (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") {
+            //         delete newEmployee.reporting
+            //     }
+            //     // Update Employee
+            //     await dispatch(editEmployee({ id: newEmployee?._id, data: newEmployee })).unwrap();
+            // }
 
             // Fetch Updated Data
             await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
@@ -101,71 +113,97 @@ export default function List() {
                 file: null
             });
             setuploadedImg("");
-            setErrors({});
+            // setErrors({});
+            seterrorsInData(createErrors);
         }, 1000);
     }, [imageStatus === 'succeeded'])
 
     if (status === 'loading') return <p>Loading...</p>;
     if (status === 'failed') return <p>Error: {error}</p>;
 
-    const validate = () => {
-        const validationErrors = {};
-        if (!newEmployee.fullName.trim()) validationErrors.fullName = 'Full Name is required';
-        if (!newEmployee.designation.trim()) validationErrors.designation = 'Designation is required';
-        if (!newEmployee.date_of_birth.trim()) validationErrors.date_of_birth = 'Date of Birth is required';
-        if (!newEmployee.experience_years || isNaN(newEmployee.experience_years)) validationErrors.experience_years = 'Valid experience years are required';
-        if ((!newEmployee.designation.trim().toUpperCase() === "CEO" ||
-            !newEmployee.designation.trim().toLocaleLowerCase() === "chief executive officer") &&
-            !newEmployee.reporting.trim()) {
-            validationErrors.reporting = 'Reporting ID is required'
-        };
-        if (actionType === "add" && !newEmployee.file) {
-            validationErrors.file = 'File is required';
+    const handleValidation = () => {
+        const { fullName, designation, reporting, file } = newEmployee;
+
+        if (fullName === "") {
+            seterrorsInData({ ...createErrors, fullName: "Full name is required." });
+            scrollToErrorElement("fullName");
+            return false;
         }
-        return validationErrors;
-    };
-
-
-    const handleAddEmployee = async () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
+        if (fullName.length < 3) {
+            seterrorsInData({ ...createErrors, fullName: "Full name must be atleast 3 characters." });
+            scrollToErrorElement("fullName");
+            return false;
         }
-
-        try {
-            // Upload Image if there is a file
-            if (newEmployee.file) {
-                const formData = new FormData();
-                formData.append('image', newEmployee.file);
-                await dispatch(uploadImage(formData)).unwrap();
+        if (designation === "") {
+            seterrorsInData({ ...createErrors, designation: "Designation is required." });
+            return false;
+        }
+        if (designation.length < 3) {
+            seterrorsInData({ ...createErrors, designation: "Designation must be atleast 3 characters." });
+            return false;
+        }
+        if (actionType === "add" && file === null) {
+            seterrorsInData({ ...createErrors, file: 'File is required' });
+            return false;
+        }
+        if (designation.toUpperCase() !== "CEO") {
+            // console.log("CEO", reporting);
+            if (reporting === "") {
+                seterrorsInData({ ...createErrors, reporting: "Reporting ID is required." });
+                return false;
             }
+        }
+
+        return true;
+    }
 
 
-        } catch (err) {
-            console.error("Error adding employee:", err);
+    const handleAddEmployee = async (event) => {
+        event.preventDefault();
+
+        if (handleValidation()) {
+            try {
+                // Upload Image if there is a file
+                if (newEmployee.file) {
+                    const formData = new FormData();
+                    formData.append('image', newEmployee.file);
+                    await dispatch(uploadImage(formData)).unwrap();
+                }
+
+
+            } catch (err) {
+                console.error("Error adding employee:", err);
+            }
         }
     };
 
-    const handleEditEmployee = async () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
+    const fileUploadToServer = async (data) => {
+        if (data) {
+            const formData = new FormData();
+            formData.append("image", data);
+            return fileUpload("/upload-image", formData);
         }
+    };
 
-        try {
-            // Upload Image if there is a file
-            if (newEmployee.file) {
-                const formData = new FormData();
-                formData.append('image', newEmployee.file);
-                await dispatch(uploadImage(formData)).unwrap();
-            } else {
-                if (newEmployee.designation.toUpperCase() === "CEO" || newEmployee.designation.toLowerCase() === "chief executive officer") {
-                    delete newEmployee.reporting
+    const handleEditEmployee = async (event) => {
+        event.preventDefault();
+
+        if (handleValidation()) {
+            try {
+                let bodyData = { ...newEmployee };
+                // Upload Image if there is a file
+                if (newEmployee.file) {
+                    let imgUpRes = await fileUploadToServer(newEmployee.file);
+                    if (imgUpRes && imgUpRes.status) {
+                        bodyData.picture = imgUpRes.imageUrl.filePath;
+                    }
+                }
+
+                if (bodyData.designation.toUpperCase() === "CEO" || bodyData.designation.toLowerCase() === "chief executive officer") {
+                    delete bodyData.reporting
                 }
                 // Update Employee
-                await dispatch(editEmployee({ id: newEmployee?._id, data: newEmployee })).unwrap();
+                await dispatch(editEmployee({ id: bodyData?._id, data: bodyData })).unwrap();
 
                 // Fetch Updated Data
                 await Promise.all([dispatch(fetchData()), dispatch(fetchDataEmployee())]);
@@ -183,12 +221,11 @@ export default function List() {
                     file: null
                 });
                 setuploadedImg("");
-                setErrors({});
+                // setErrors({});
+                seterrorsInData(createErrors);
+            } catch (err) {
+                console.error("Error adding employee:", err);
             }
-
-
-        } catch (err) {
-            console.error("Error adding employee:", err);
         }
     };
 
@@ -267,7 +304,7 @@ export default function List() {
                         value={newEmployee.fullName}
                         onChange={(e) => setNewEmployee({ ...newEmployee, fullName: e.target.value })}
                     />
-                    {errors.fullName && <small className="p-error">{errors.fullName}</small>}
+                    <small className="p-error">{errorsInData.fullName}</small>
                 </div>
                 <div className="p-field">
                     <label htmlFor="designation">Designation</label>
@@ -276,7 +313,7 @@ export default function List() {
                         value={newEmployee.designation}
                         onChange={(e) => setNewEmployee({ ...newEmployee, designation: e.target.value })}
                     />
-                    {errors.designation && <small className="p-error">{errors.designation}</small>}
+                    <small className="p-error">{errorsInData.designation}</small>
                 </div>
                 <div className="p-field">
                     <label htmlFor="date_of_birth">Date of Birth</label>
@@ -296,7 +333,7 @@ export default function List() {
                         onChange={(e) => setNewEmployee({ ...newEmployee, experience_years: e.target.value })}
                         onBlur={(e) => setNewEmployee({ ...newEmployee, experience_years: parseInt(e.target.value) })}
                     />
-                    {errors.experience_years && <small className="p-error">{errors.experience_years}</small>}
+                    <small className="p-error">{errors.experience_years}</small>
                 </div>
                 <div className="p-field">
                     <label htmlFor="file">Upload Picture</label>
@@ -311,7 +348,7 @@ export default function List() {
                             setNewEmployee({ ...newEmployee, file: e.target.files[0] })
                         }}
                     />
-                    {errors.file && <small className="p-error">{errors.file}</small>}
+                    <small className="p-error">{errorsInData.file}</small>
                 </div>
                 {uploadedImg !== "" && <div>
                     <img src={uploadedImg} height="100" width="100" />
@@ -326,7 +363,7 @@ export default function List() {
                         onChange={(e) => setNewEmployee({ ...newEmployee, reporting: e.value })}
                         placeholder="Select Reporting Employee"
                     />
-                    {errors.reporting && <small className="p-error">{errors.reporting}</small>}
+                    <small className="p-error">{errorsInData.reporting}</small>
                 </div>}
                 <Button
                     label={actionType === "add" ? "Add" : "Edit"}
