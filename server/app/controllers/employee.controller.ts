@@ -13,8 +13,8 @@ import {
 export async function createEmployee(req: Request, res: Response) {
   try {
     if (
-      req.body.designation.toUpperCase() !== "CEO" ||
-      req.body.designation.toLowerCase() !== "chief executive officer"
+      req.body.designation.toUpperCase() !== "CEO" // ||
+      // req.body.designation.toLowerCase() !== "chief executive officer"
     ) {
       if (!req.body.reporting) {
         return res.status(400).json({
@@ -39,8 +39,8 @@ export async function createEmployee(req: Request, res: Response) {
       message: "Employee added sucessfully",
       data: employee,
     });
-  } catch (error:any) {
-    console.log(error)
+  } catch (error: any) {
+    console.log(error);
     return res.status(500).json({
       status: false,
       message: "Server error. Please try again.",

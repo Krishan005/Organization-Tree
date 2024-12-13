@@ -29,6 +29,7 @@ const EMPLOYEE_SCHEMA = new mongoose.Schema({
     },
     reporting: {
         type: mongoose.Schema.Types.ObjectId,
+        default: null
     },
     picture: {
         type: String,
