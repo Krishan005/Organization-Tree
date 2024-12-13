@@ -55,7 +55,6 @@ export default function List() {
     const { employees, employeesstatus } = useSelector((state) => state.allemployees);
     const { AddedEmployee, newEmployeeStatus, newEmployeeerror } = useSelector((state) => state.addAndEditEmployees);
     const { image, imageStatus, imageError } = useSelector((state) => state.uploadImage);
-    console.log("newEmployee", newEmployee)
 
     useEffect(() => {
         if (status === 'idle') {
